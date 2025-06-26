@@ -17,21 +17,23 @@
           </v-card-title>
 
           <!-- Theme Toggle -->
-          <v-row class="mb-4 align-center">
-            <v-col cols="9">
-              <div class="text-subtitle-1">Tema scuro</div>
-              <div class="text-caption text-medium-emphasis">
-                Attiva la modalità scura per ridurre l'affaticamento degli occhi
-
+          <v-row class="mb-4">
+            <v-col cols="12">
+              <div class="d-flex justify-space-between align-center">
+                <div>
+                  <div class="text-subtitle-1">Tema scuro</div>
+                  <div class="text-caption text-medium-emphasis">
+                    Attiva la modalità scura per ridurre l'affaticamento degli occhi
+                  </div>
+                </div>
+                <v-switch
+                  v-model="settings.darkTheme"
+                  color="primary"
+                  hide-details
+                  class="ml-auto"
+                  @change="updateTheme"
+                ></v-switch>
               </div>
-            </v-col>
-            <v-col cols="3" class="text-right">
-              <v-switch
-                v-model="settings.darkTheme"
-                color="primary"
-                hide-details
-                @change="updateTheme"
-              ></v-switch>
             </v-col>
           </v-row>
 
@@ -282,18 +284,15 @@ export default {
           const docRef = await addDoc(collection(db, 'settings'), settingsData)
           settingsId.value = docRef.id
         }
-
-        showSnackbar('Impostazioni salvate con successo', 'success')
-        document.documentElement.style.fontSize = `${settings.value.fontSize}px`
-        await loadSettings()
-      } catch (error) {
-        console.error('Error saving settings:', error)
-        showSnackbar('Errore nel salvataggio delle impostazioni', 'error')
-      } finally {
-        saving.value = false
-      }
-    }
-
+showSnackbar('Impostazioni salvate con successo', 'success')
+document.documentElement.style.fontSize = `${settings.value.fontSize}px`
+await loadSettings()
+} catch (error) {
+  console.error('Error saving settings:', error)
+  showSnackbar('Errore nel salvataggio delle impostazioni', 'error')
+} finally {
+  saving.value = false
+}
 
     // Update theme
     const updateTheme = () => {
