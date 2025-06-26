@@ -3,7 +3,7 @@
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     temporary
-    width="300"
+    :width="drawerWidth"
   >
     <v-list>
       <!-- User Info -->
@@ -64,6 +64,17 @@
           <v-list-item-title class="text-truncate">
             {{ chat.title || 'Nuova Conversazione' }}
           </v-list-item-title>
+          <template v-slot:append>
+            <v-btn
+              icon
+              size="small"
+              variant="text"
+              color="error"
+              @click.stop="promptDeleteChat(chat)"
+            >
+              <v-icon>mdi-delete-outline</v-icon>
+            </v-btn>
+          </template>
           <v-list-item-subtitle class="text-caption">
             {{ formatDate(chat.updatedAt) }}
           </v-list-item-subtitle>
@@ -97,12 +108,39 @@
       </v-list>
     </v-list>
   </v-navigation-drawer>
+
+  <v-dialog v-model="confirmDelete" max-width="400">
+    <v-card>
+      <v-card-title class="text-h6">Elimina chat</v-card-title>
+      <v-card-text>
+        Vuoi davvero eliminare questa chat? Non sarà possibile recuperarla.
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn text @click="confirmDelete = false">Annulla</v-btn>
+        <v-btn text color="error" :loading="deletingChat" @click="deleteChat">
+          Elimina
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useDisplay } from 'vuetify'
+import { useRouter } from 'vue-router'
 import { db } from '@/firebase'
-import { collection, addDoc, getDocs, orderBy, query, serverTimestamp } from 'firebase/firestore'
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  serverTimestamp,
+  deleteDoc,
+  doc
+} from 'firebase/firestore'
 
 export default {
   name: 'ChatDrawer',
@@ -115,6 +153,12 @@ export default {
     const chats = ref([])
     const loading = ref(false)
     const creatingChat = ref(false)
+    const confirmDelete = ref(false)
+    const chatToDelete = ref(null)
+    const deletingChat = ref(false)
+    const { smAndDown } = useDisplay()
+    const router = useRouter()
+    const drawerWidth = computed(() => (smAndDown.value ? 280 : 320))
 
     const username = computed(() => {
       return localStorage.getItem('username') || 'Utente'
@@ -124,12 +168,18 @@ export default {
     const loadChats = async () => {
       loading.value = true
       try {
-        const q = query(collection(db, 'chats'), orderBy('updatedAt', 'desc'))
+        const q = query(
+          collection(db, 'chats'),
+          where('userId', '==', username.value)
+        )
         const querySnapshot = await getDocs(q)
-        chats.value = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
+        chats.value = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => {
+            const ta = a.updatedAt?.toDate ? a.updatedAt.toDate() : new Date(a.updatedAt)
+            const tb = b.updatedAt?.toDate ? b.updatedAt.toDate() : new Date(b.updatedAt)
+            return tb - ta
+          })
       } catch (error) {
         console.error('Error loading chats:', error)
       } finally {
@@ -152,6 +202,7 @@ export default {
         await loadChats() // Reload chats
         emit('new-chat', docRef.id)
         emit('update:modelValue', false) // Close drawer
+        router.push('/')
       } catch (error) {
         console.error('Error creating chat:', error)
       } finally {
@@ -159,10 +210,44 @@ export default {
       }
     }
 
+    const promptDeleteChat = (chat) => {
+      chatToDelete.value = chat
+      confirmDelete.value = true
+    }
+
+    const deleteChat = async () => {
+      if (!chatToDelete.value) return
+      deletingChat.value = true
+      try {
+        await deleteDoc(doc(db, 'chats', chatToDelete.value.id))
+
+        const q = query(
+          collection(db, 'messages'),
+          where('chatId', '==', chatToDelete.value.id)
+        )
+        const snap = await getDocs(q)
+        const promises = snap.docs.map(d => deleteDoc(d.ref))
+        await Promise.all(promises)
+
+        if (props.currentChatId === chatToDelete.value.id) {
+          emit('select-chat', null)
+        }
+
+        await loadChats()
+        confirmDelete.value = false
+      } catch (error) {
+        console.error('Error deleting chat:', error)
+      } finally {
+        deletingChat.value = false
+        chatToDelete.value = null
+      }
+    }
+
     // Select existing chat
     const selectChat = (chatId) => {
       emit('select-chat', chatId)
       emit('update:modelValue', false) // Close drawer
+      router.push('/')
     }
 
     // Format date for display
@@ -177,11 +262,11 @@ export default {
       
       const now = new Date()
       const diffTime = Math.abs(now - date)
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      
-      if (diffDays === 1) return 'Oggi'
-      if (diffDays === 2) return 'Ieri'
-      if (diffDays <= 7) return `${diffDays} giorni fa`
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+
+      if (diffDays === 0) return 'Oggi'
+      if (diffDays === 1) return 'Ieri'
+      if (diffDays < 7) return `${diffDays} giorni fa`
       
       return date.toLocaleDateString('it-IT', { 
         day: 'numeric', 
@@ -193,11 +278,25 @@ export default {
       loadChats()
     })
 
+    watch(
+      () => props.modelValue,
+      (val) => {
+        if (val) {
+          loadChats()
+        }
+      }
+    )
+
     return {
       chats,
       loading,
       creatingChat,
+      confirmDelete,
+      deletingChat,
+      promptDeleteChat,
+      deleteChat,
       username,
+      drawerWidth,
       createNewChat,
       selectChat,
       formatDate

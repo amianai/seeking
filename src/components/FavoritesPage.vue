@@ -160,10 +160,9 @@ import { db } from '@/firebase'
 import { 
   collection, 
   getDocs, 
-  query, 
-  where, 
-  orderBy, 
-  updateDoc, 
+  query,
+  where,
+  updateDoc,
   doc 
 } from 'firebase/firestore'
 
@@ -200,13 +199,16 @@ export default {
         const q = query(
           collection(db, 'messages'),
           where('isFavorite', '==', true),
-          orderBy('timestamp', 'desc')
+          where('userId', '==', username.value)
         )
         const querySnapshot = await getDocs(q)
-        favoriteMessages.value = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
+        favoriteMessages.value = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => {
+            const ta = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp)
+            const tb = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp)
+            return tb - ta
+          })
       } catch (error) {
         console.error('Error loading favorite messages:', error)
         showSnackbar('Errore nel caricamento dei messaggi preferiti', 'error')
@@ -331,6 +333,12 @@ export default {
 
 .message-content::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 600px) {
+  .favorite-card {
+    margin-bottom: 16px;
+  }
 }
 </style>
 

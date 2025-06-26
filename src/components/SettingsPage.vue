@@ -17,22 +17,20 @@
           </v-card-title>
 
           <!-- Theme Toggle -->
-          <v-row class="mb-4">
-            <v-col cols="12">
-              <div class="d-flex justify-space-between align-center">
-                <div>
-                  <div class="text-subtitle-1">Tema scuro</div>
-                  <div class="text-caption text-medium-emphasis">
-                    Attiva la modalità scura per ridurre l'affaticamento degli occhi
-                  </div>
-                </div>
-                <v-switch
-                  v-model="settings.darkTheme"
-                  color="primary"
-                  hide-details
-                  @change="updateTheme"
-                ></v-switch>
+          <v-row class="mb-4 align-center">
+            <v-col cols="9">
+              <div class="text-subtitle-1">Tema scuro</div>
+              <div class="text-caption text-medium-emphasis">
+                Attiva la modalità scura per ridurre l'affaticamento degli occhi
               </div>
+            </v-col>
+            <v-col cols="3" class="text-right">
+              <v-switch
+                v-model="settings.darkTheme"
+                color="primary"
+                hide-details
+                @change="updateTheme"
+              ></v-switch>
             </v-col>
           </v-row>
 
@@ -197,14 +195,15 @@
 import { ref, onMounted } from 'vue'
 import { useTheme } from 'vuetify'
 import { db } from '@/firebase'
-import { 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  getDocs, 
-  query, 
-  where, 
-  doc 
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  getDocs,
+  query,
+  where,
+  doc,
+  serverTimestamp
 } from 'firebase/firestore'
 
 export default {
@@ -244,15 +243,16 @@ export default {
           const data = doc.data()
           
           settings.value = {
-            darkTheme: data.darkTheme || false,
-            fontSize: data.fontSize || 16,
-            temperature: data.temperature || 0.7,
-            maxTokens: data.maxTokens || 1000,
+            darkTheme: data.darkTheme ?? false,
+            fontSize: data.fontSize ?? 16,
+            temperature: data.temperature ?? 0.7,
+            maxTokens: data.maxTokens ?? 1000,
             username: username
           }
           
           // Apply theme
           theme.global.name.value = settings.value.darkTheme ? 'dark' : 'light'
+          document.documentElement.style.fontSize = `${settings.value.fontSize}px`
         }
       } catch (error) {
         console.error('Error loading settings:', error)
@@ -270,7 +270,7 @@ export default {
         const settingsData = {
           ...settings.value,
           userId: username,
-          updatedAt: new Date()
+          updatedAt: serverTimestamp()
         }
 
         if (settingsId.value) {
@@ -283,6 +283,8 @@ export default {
         }
 
         showSnackbar('Impostazioni salvate con successo', 'success')
+        document.documentElement.style.fontSize = `${settings.value.fontSize}px`
+        await loadSettings()
       } catch (error) {
         console.error('Error saving settings:', error)
         showSnackbar('Errore nel salvataggio delle impostazioni', 'error')
@@ -368,6 +370,13 @@ export default {
 .settings-container {
   padding-top: 32px;
   padding-bottom: 32px;
+}
+
+@media (max-width: 600px) {
+  .settings-container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
 }
 
 .v-slider {
