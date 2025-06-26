@@ -497,3 +497,21 @@ export default {
   }
 }
 </style>
+
+
+@media (max-width: 600px) {
+  .chat-container {
+    height: calc(100vh - 56px);
+  }
+  .message-input-card {
+    margin-left: 8px !important;
+    margin-right: 8px !important;
+  }
+}
+
+@media (max-width: 960px) {
+  .message-input-card {
+    max-width: 95%;
+  }
+}
+</style>
