@@ -284,17 +284,15 @@ export default {
           const docRef = await addDoc(collection(db, 'settings'), settingsData)
           settingsId.value = docRef.id
         }
-
-        showSnackbar('Impostazioni salvate con successo', 'success')
-        document.documentElement.style.fontSize = `${settings.value.fontSize}px`
-        await loadSettings()
-      } catch (error) {
-        console.error('Error saving settings:', error)
-        showSnackbar('Errore nel salvataggio delle impostazioni', 'error')
-      } finally {
-        saving.value = false
-      }
-    }
+showSnackbar('Impostazioni salvate con successo', 'success')
+document.documentElement.style.fontSize = `${settings.value.fontSize}px`
+await loadSettings()
+} catch (error) {
+  console.error('Error saving settings:', error)
+  showSnackbar('Errore nel salvataggio delle impostazioni', 'error')
+} finally {
+  saving.value = false
+}
 
     // Update theme
     const updateTheme = () => {

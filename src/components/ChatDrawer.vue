@@ -141,7 +141,6 @@ import {
   deleteDoc,
   doc
 } from 'firebase/firestore'
-
 export default {
   name: 'ChatDrawer',
   props: {
@@ -150,15 +149,15 @@ export default {
   },
   emits: ['update:modelValue', 'new-chat', 'select-chat'],
   setup(props, { emit }) {
-    const chats = ref([])
-    const loading = ref(false)
-    const creatingChat = ref(false)
-    const confirmDelete = ref(false)
-    const chatToDelete = ref(null)
-    const deletingChat = ref(false)
-    const { smAndDown } = useDisplay()
-    const router = useRouter()
-    const drawerWidth = computed(() => (smAndDown.value ? 280 : 320))
+  const chats = ref([])
+  const loading = ref(false)
+  const creatingChat = ref(false)
+  const confirmDelete = ref(false)
+  const chatToDelete = ref(null)
+  const deletingChat = ref(false)
+  const { smAndDown } = useDisplay()
+  const router = useRouter()
+  const drawerWidth = computed(() => (smAndDown.value ? 280 : 320))
 
     const username = computed(() => {
       return localStorage.getItem('username') || 'Utente'
