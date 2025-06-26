@@ -197,14 +197,15 @@
 import { ref, onMounted } from 'vue'
 import { useTheme } from 'vuetify'
 import { db } from '@/firebase'
-import { 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  getDocs, 
-  query, 
-  where, 
-  doc 
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  getDocs,
+  query,
+  where,
+  doc,
+  serverTimestamp
 } from 'firebase/firestore'
 
 export default {
@@ -271,7 +272,7 @@ export default {
         const settingsData = {
           ...settings.value,
           userId: username,
-          updatedAt: new Date()
+          updatedAt: serverTimestamp()
         }
 
         if (settingsId.value) {
@@ -285,6 +286,10 @@ export default {
 
         showSnackbar('Impostazioni salvate con successo', 'success')
         document.documentElement.style.fontSize = `${settings.value.fontSize}px`
+<<<<<<< l6mxkl-codex/fix-chat-switching-and-favorites-issues
+        await loadSettings()
+=======
+>>>>>>> main
       } catch (error) {
         console.error('Error saving settings:', error)
         showSnackbar('Errore nel salvataggio delle impostazioni', 'error')

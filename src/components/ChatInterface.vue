@@ -92,6 +92,8 @@ import {
 import axios from 'axios'
 import MessageBubble from './MessageBubble.vue'
 
+const API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY
+
 export default {
   name: 'ChatInterface',
   components: {
@@ -242,7 +244,7 @@ export default {
           max_tokens: 1000
         }, {
           headers: {
-            'Authorization': 'Bearer sk-e41be62297af4e4faac2cf38193a9f00',
+            Authorization: `Bearer ${API_KEY}`,
             'Content-Type': 'application/json'
           }
         })

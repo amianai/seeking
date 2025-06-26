@@ -59,7 +59,7 @@ npm install
 
 ```javascript
 const firebaseConfig = {
-  apiKey: 'TUA_API_KEY',
+  apiKey: 'TUA_FIREBASE_API_KEY',
   authDomain: 'TUO_AUTH_DOMAIN',
   projectId: 'TUO_PROJECT_ID',
   storageBucket: 'TUO_STORAGE_BUCKET',
@@ -68,19 +68,13 @@ const firebaseConfig = {
 };
 ```
 
-4. Configura l'API DeepSeek:
-   - Modifica la chiave API nel file `src/components/ChatInterface.vue`:
+4. Configura l'API DeepSeek creando un file `.env` (puoi copiare `.env.example`):
 
-```javascript
-const response = await axios.post('https://api.deepseek.com/v1/chat/completions', {
-  // ...
-}, {
-  headers: {
-    'Authorization': 'Bearer TUA_API_KEY',
-    'Content-Type': 'application/json'
-  }
-});
+```bash
+cp .env.example .env
 ```
+
+Inserisci la tua chiave API nel file `.env` sostituendo `your_deepseek_api_key_here`.
 
 ### Avvio dell'Applicazione in Locale
 

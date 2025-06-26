@@ -102,6 +102,10 @@
 <script>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useDisplay } from 'vuetify'
+<<<<<<< l6mxkl-codex/fix-chat-switching-and-favorites-issues
+import { useRouter } from 'vue-router'
+=======
+>>>>>>> main
 import { db } from '@/firebase'
 import { collection, addDoc, getDocs, query, where, serverTimestamp } from 'firebase/firestore'
 
@@ -117,6 +121,10 @@ export default {
     const loading = ref(false)
     const creatingChat = ref(false)
     const { smAndDown } = useDisplay()
+<<<<<<< l6mxkl-codex/fix-chat-switching-and-favorites-issues
+    const router = useRouter()
+=======
+>>>>>>> main
     const drawerWidth = computed(() => (smAndDown.value ? 260 : 300))
 
     const username = computed(() => {
@@ -161,6 +169,7 @@ export default {
         await loadChats() // Reload chats
         emit('new-chat', docRef.id)
         emit('update:modelValue', false) // Close drawer
+        router.push('/')
       } catch (error) {
         console.error('Error creating chat:', error)
       } finally {
@@ -172,6 +181,7 @@ export default {
     const selectChat = (chatId) => {
       emit('select-chat', chatId)
       emit('update:modelValue', false) // Close drawer
+      router.push('/')
     }
 
     // Format date for display
