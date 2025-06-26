@@ -490,5 +490,10 @@ export default {
     margin-right: 8px !important;
   }
 }
-</style>
 
+@media (max-width: 960px) {
+  .message-input-card {
+    max-width: 95%;
+  }
+}
+</style>

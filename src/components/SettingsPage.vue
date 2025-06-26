@@ -30,6 +30,7 @@
                   v-model="settings.darkTheme"
                   color="primary"
                   hide-details
+                  class="ml-auto"
                   @change="updateTheme"
                 ></v-switch>
               </div>
@@ -245,10 +246,10 @@ export default {
           const data = doc.data()
           
           settings.value = {
-            darkTheme: data.darkTheme || false,
-            fontSize: data.fontSize || 16,
-            temperature: data.temperature || 0.7,
-            maxTokens: data.maxTokens || 1000,
+            darkTheme: data.darkTheme ?? false,
+            fontSize: data.fontSize ?? 16,
+            temperature: data.temperature ?? 0.7,
+            maxTokens: data.maxTokens ?? 1000,
             username: username
           }
           
@@ -283,20 +284,15 @@ export default {
           const docRef = await addDoc(collection(db, 'settings'), settingsData)
           settingsId.value = docRef.id
         }
-
-        showSnackbar('Impostazioni salvate con successo', 'success')
-        document.documentElement.style.fontSize = `${settings.value.fontSize}px`
-<<<<<<< l6mxkl-codex/fix-chat-switching-and-favorites-issues
-        await loadSettings()
-=======
->>>>>>> main
-      } catch (error) {
-        console.error('Error saving settings:', error)
-        showSnackbar('Errore nel salvataggio delle impostazioni', 'error')
-      } finally {
-        saving.value = false
-      }
-    }
+showSnackbar('Impostazioni salvate con successo', 'success')
+document.documentElement.style.fontSize = `${settings.value.fontSize}px`
+await loadSettings()
+} catch (error) {
+  console.error('Error saving settings:', error)
+  showSnackbar('Errore nel salvataggio delle impostazioni', 'error')
+} finally {
+  saving.value = false
+}
 
     // Update theme
     const updateTheme = () => {

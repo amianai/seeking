@@ -64,6 +64,17 @@
           <v-list-item-title class="text-truncate">
             {{ chat.title || 'Nuova Conversazione' }}
           </v-list-item-title>
+          <template v-slot:append>
+            <v-btn
+              icon
+              size="small"
+              variant="text"
+              color="error"
+              @click.stop="promptDeleteChat(chat)"
+            >
+              <v-icon>mdi-delete-outline</v-icon>
+            </v-btn>
+          </template>
           <v-list-item-subtitle class="text-caption">
             {{ formatDate(chat.updatedAt) }}
           </v-list-item-subtitle>
@@ -97,18 +108,39 @@
       </v-list>
     </v-list>
   </v-navigation-drawer>
+
+  <v-dialog v-model="confirmDelete" max-width="400">
+    <v-card>
+      <v-card-title class="text-h6">Elimina chat</v-card-title>
+      <v-card-text>
+        Vuoi davvero eliminare questa chat? Non sarà possibile recuperarla.
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn text @click="confirmDelete = false">Annulla</v-btn>
+        <v-btn text color="error" :loading="deletingChat" @click="deleteChat">
+          Elimina
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useDisplay } from 'vuetify'
-<<<<<<< l6mxkl-codex/fix-chat-switching-and-favorites-issues
 import { useRouter } from 'vue-router'
-=======
->>>>>>> main
 import { db } from '@/firebase'
-import { collection, addDoc, getDocs, query, where, serverTimestamp } from 'firebase/firestore'
-
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  serverTimestamp,
+  deleteDoc,
+  doc
+} from 'firebase/firestore'
 export default {
   name: 'ChatDrawer',
   props: {
@@ -117,15 +149,15 @@ export default {
   },
   emits: ['update:modelValue', 'new-chat', 'select-chat'],
   setup(props, { emit }) {
-    const chats = ref([])
-    const loading = ref(false)
-    const creatingChat = ref(false)
-    const { smAndDown } = useDisplay()
-<<<<<<< l6mxkl-codex/fix-chat-switching-and-favorites-issues
-    const router = useRouter()
-=======
->>>>>>> main
-    const drawerWidth = computed(() => (smAndDown.value ? 260 : 300))
+  const chats = ref([])
+  const loading = ref(false)
+  const creatingChat = ref(false)
+  const confirmDelete = ref(false)
+  const chatToDelete = ref(null)
+  const deletingChat = ref(false)
+  const { smAndDown } = useDisplay()
+  const router = useRouter()
+  const drawerWidth = computed(() => (smAndDown.value ? 280 : 320))
 
     const username = computed(() => {
       return localStorage.getItem('username') || 'Utente'
@@ -177,6 +209,39 @@ export default {
       }
     }
 
+    const promptDeleteChat = (chat) => {
+      chatToDelete.value = chat
+      confirmDelete.value = true
+    }
+
+    const deleteChat = async () => {
+      if (!chatToDelete.value) return
+      deletingChat.value = true
+      try {
+        await deleteDoc(doc(db, 'chats', chatToDelete.value.id))
+
+        const q = query(
+          collection(db, 'messages'),
+          where('chatId', '==', chatToDelete.value.id)
+        )
+        const snap = await getDocs(q)
+        const promises = snap.docs.map(d => deleteDoc(d.ref))
+        await Promise.all(promises)
+
+        if (props.currentChatId === chatToDelete.value.id) {
+          emit('select-chat', null)
+        }
+
+        await loadChats()
+        confirmDelete.value = false
+      } catch (error) {
+        console.error('Error deleting chat:', error)
+      } finally {
+        deletingChat.value = false
+        chatToDelete.value = null
+      }
+    }
+
     // Select existing chat
     const selectChat = (chatId) => {
       emit('select-chat', chatId)
@@ -225,6 +290,10 @@ export default {
       chats,
       loading,
       creatingChat,
+      confirmDelete,
+      deletingChat,
+      promptDeleteChat,
+      deleteChat,
       username,
       drawerWidth,
       createNewChat,
