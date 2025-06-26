@@ -30,6 +30,7 @@
                   v-model="settings.darkTheme"
                   color="primary"
                   hide-details
+                  class="ml-auto"
                   @change="updateTheme"
                 ></v-switch>
               </div>
@@ -245,10 +246,10 @@ export default {
           const data = doc.data()
           
           settings.value = {
-            darkTheme: data.darkTheme || false,
-            fontSize: data.fontSize || 16,
-            temperature: data.temperature || 0.7,
-            maxTokens: data.maxTokens || 1000,
+            darkTheme: data.darkTheme ?? false,
+            fontSize: data.fontSize ?? 16,
+            temperature: data.temperature ?? 0.7,
+            maxTokens: data.maxTokens ?? 1000,
             username: username
           }
           
