@@ -18,6 +18,7 @@ Seeking è una Single-Page Application (SPA) che funge da interfaccia utente per
 3. **Interazione con Database**: Firebase Cloud Firestore per salvare chat, messaggi, preferiti e impostazioni.
 4. **Uso di API**: DeepSeek API per le risposte dell'assistente AI.
 5. **Responsive Design**: Implementato con Vuetify 3 per adattarsi a smartphone, tablet e PC desktop.
+   Le ultime versioni utilizzano breakpoint CSS per migliorare la disposizione dei componenti su schermi piccoli.
 
 ## Stack Tecnologico
 
@@ -58,7 +59,7 @@ npm install
 
 ```javascript
 const firebaseConfig = {
-  apiKey: 'TUA_API_KEY',
+  apiKey: 'TUA_FIREBASE_API_KEY',
   authDomain: 'TUO_AUTH_DOMAIN',
   projectId: 'TUO_PROJECT_ID',
   storageBucket: 'TUO_STORAGE_BUCKET',
@@ -67,19 +68,13 @@ const firebaseConfig = {
 };
 ```
 
-4. Configura l'API DeepSeek:
-   - Modifica la chiave API nel file `src/components/ChatInterface.vue`:
+4. Configura l'API DeepSeek creando un file `.env` (puoi copiare `.env.example`):
 
-```javascript
-const response = await axios.post('https://api.deepseek.com/v1/chat/completions', {
-  // ...
-}, {
-  headers: {
-    'Authorization': 'Bearer TUA_API_KEY',
-    'Content-Type': 'application/json'
-  }
-});
+```bash
+cp .env.example .env
 ```
+
+Inserisci la tua chiave API nel file `.env` sostituendo `your_deepseek_api_key_here`.
 
 ### Avvio dell'Applicazione in Locale
 

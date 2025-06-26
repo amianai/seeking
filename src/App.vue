@@ -15,8 +15,9 @@
     </v-app-bar>
 
     <!-- Navigation Drawer -->
-    <ChatDrawer 
-      v-model="drawer" 
+    <ChatDrawer
+      v-model="drawer"
+      :current-chat-id="currentChatId"
       @new-chat="handleNewChat"
       @select-chat="handleSelectChat"
     />
