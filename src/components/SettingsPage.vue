@@ -22,6 +22,7 @@
               <div class="text-subtitle-1">Tema scuro</div>
               <div class="text-caption text-medium-emphasis">
                 Attiva la modalità scura per ridurre l'affaticamento degli occhi
+
               </div>
             </v-col>
             <v-col cols="3" class="text-right">
@@ -292,6 +293,7 @@ export default {
         saving.value = false
       }
     }
+
 
     // Update theme
     const updateTheme = () => {

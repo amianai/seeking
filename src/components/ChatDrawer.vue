@@ -160,6 +160,7 @@ export default {
     const router = useRouter()
     const drawerWidth = computed(() => (smAndDown.value ? 280 : 320))
 
+
     const username = computed(() => {
       return localStorage.getItem('username') || 'Utente'
     })
