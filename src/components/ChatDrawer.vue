@@ -102,7 +102,10 @@
 <script>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useDisplay } from 'vuetify'
+<<<<<<< l6mxkl-codex/fix-chat-switching-and-favorites-issues
 import { useRouter } from 'vue-router'
+=======
+>>>>>>> main
 import { db } from '@/firebase'
 import { collection, addDoc, getDocs, query, where, serverTimestamp } from 'firebase/firestore'
 
@@ -118,7 +121,10 @@ export default {
     const loading = ref(false)
     const creatingChat = ref(false)
     const { smAndDown } = useDisplay()
+<<<<<<< l6mxkl-codex/fix-chat-switching-and-favorites-issues
     const router = useRouter()
+=======
+>>>>>>> main
     const drawerWidth = computed(() => (smAndDown.value ? 260 : 300))
 
     const username = computed(() => {
