@@ -18,6 +18,7 @@ Seeking è una Single-Page Application (SPA) che funge da interfaccia utente per
 3. **Interazione con Database**: Firebase Cloud Firestore per salvare chat, messaggi, preferiti e impostazioni.
 4. **Uso di API**: DeepSeek API per le risposte dell'assistente AI.
 5. **Responsive Design**: Implementato con Vuetify 3 per adattarsi a smartphone, tablet e PC desktop.
+   Le ultime versioni utilizzano breakpoint CSS per migliorare la disposizione dei componenti su schermi piccoli.
 
 ## Stack Tecnologico
 

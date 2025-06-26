@@ -253,6 +253,7 @@ export default {
           
           // Apply theme
           theme.global.name.value = settings.value.darkTheme ? 'dark' : 'light'
+          document.documentElement.style.fontSize = `${settings.value.fontSize}px`
         }
       } catch (error) {
         console.error('Error loading settings:', error)
@@ -283,6 +284,7 @@ export default {
         }
 
         showSnackbar('Impostazioni salvate con successo', 'success')
+        document.documentElement.style.fontSize = `${settings.value.fontSize}px`
       } catch (error) {
         console.error('Error saving settings:', error)
         showSnackbar('Errore nel salvataggio delle impostazioni', 'error')
@@ -368,6 +370,13 @@ export default {
 .settings-container {
   padding-top: 32px;
   padding-bottom: 32px;
+}
+
+@media (max-width: 600px) {
+  .settings-container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
 }
 
 .v-slider {
