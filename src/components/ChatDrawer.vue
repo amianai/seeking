@@ -3,7 +3,7 @@
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     temporary
-    width="300"
+    :width="drawerWidth"
   >
     <v-list>
       <!-- User Info -->
@@ -100,9 +100,10 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import { db } from '@/firebase'
-import { collection, addDoc, getDocs, orderBy, query, serverTimestamp } from 'firebase/firestore'
+import { collection, addDoc, getDocs, query, where, serverTimestamp } from 'firebase/firestore'
 
 export default {
   name: 'ChatDrawer',
@@ -115,6 +116,8 @@ export default {
     const chats = ref([])
     const loading = ref(false)
     const creatingChat = ref(false)
+    const { smAndDown } = useDisplay()
+    const drawerWidth = computed(() => (smAndDown.value ? 260 : 300))
 
     const username = computed(() => {
       return localStorage.getItem('username') || 'Utente'
@@ -124,12 +127,18 @@ export default {
     const loadChats = async () => {
       loading.value = true
       try {
-        const q = query(collection(db, 'chats'), orderBy('updatedAt', 'desc'))
+        const q = query(
+          collection(db, 'chats'),
+          where('userId', '==', username.value)
+        )
         const querySnapshot = await getDocs(q)
-        chats.value = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
+        chats.value = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => {
+            const ta = a.updatedAt?.toDate ? a.updatedAt.toDate() : new Date(a.updatedAt)
+            const tb = b.updatedAt?.toDate ? b.updatedAt.toDate() : new Date(b.updatedAt)
+            return tb - ta
+          })
       } catch (error) {
         console.error('Error loading chats:', error)
       } finally {
@@ -177,11 +186,11 @@ export default {
       
       const now = new Date()
       const diffTime = Math.abs(now - date)
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      
-      if (diffDays === 1) return 'Oggi'
-      if (diffDays === 2) return 'Ieri'
-      if (diffDays <= 7) return `${diffDays} giorni fa`
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+
+      if (diffDays === 0) return 'Oggi'
+      if (diffDays === 1) return 'Ieri'
+      if (diffDays < 7) return `${diffDays} giorni fa`
       
       return date.toLocaleDateString('it-IT', { 
         day: 'numeric', 
@@ -193,11 +202,21 @@ export default {
       loadChats()
     })
 
+    watch(
+      () => props.modelValue,
+      (val) => {
+        if (val) {
+          loadChats()
+        }
+      }
+    )
+
     return {
       chats,
       loading,
       creatingChat,
       username,
+      drawerWidth,
       createNewChat,
       selectChat,
       formatDate
