@@ -1,10 +1,6 @@
 <template>
-  <v-navigation-drawer
-    :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    temporary
-    :width="drawerWidth"
-  >
+  <v-navigation-drawer :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" temporary
+    :width="drawerWidth">
     <v-list>
       <!-- User Info -->
       <v-list-item class="px-4 py-3">
@@ -22,11 +18,7 @@
       <v-divider></v-divider>
 
       <!-- New Chat Button -->
-      <v-list-item 
-        @click="createNewChat" 
-        class="mt-2"
-        :loading="creatingChat"
-      >
+      <v-list-item @click="createNewChat" class="mt-2" :loading="creatingChat">
         <template v-slot:prepend>
           <v-icon color="primary">mdi-plus</v-icon>
         </template>
@@ -51,13 +43,8 @@
       </div>
 
       <v-list v-else density="compact">
-        <v-list-item
-          v-for="chat in chats"
-          :key="chat.id"
-          @click="selectChat(chat.id)"
-          :active="chat.id === currentChatId"
-          class="mb-1"
-        >
+        <v-list-item v-for="chat in chats" :key="chat.id" @click="selectChat(chat.id)"
+          :active="chat.id === currentChatId" class="mb-1">
           <template v-slot:prepend>
             <v-icon size="20">mdi-chat</v-icon>
           </template>
@@ -87,7 +74,7 @@
           </template>
           <v-list-item-title>Messaggi Preferiti</v-list-item-title>
         </v-list-item>
-        
+
         <v-list-item to="/test-firebase">
           <template v-slot:prepend>
             <v-icon>mdi-firebase</v-icon>
@@ -102,10 +89,7 @@
 <script>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useDisplay } from 'vuetify'
-<<<<<<< l6mxkl-codex/fix-chat-switching-and-favorites-issues
 import { useRouter } from 'vue-router'
-=======
->>>>>>> main
 import { db } from '@/firebase'
 import { collection, addDoc, getDocs, query, where, serverTimestamp } from 'firebase/firestore'
 
@@ -121,10 +105,8 @@ export default {
     const loading = ref(false)
     const creatingChat = ref(false)
     const { smAndDown } = useDisplay()
-<<<<<<< l6mxkl-codex/fix-chat-switching-and-favorites-issues
     const router = useRouter()
-=======
->>>>>>> main
+
     const drawerWidth = computed(() => (smAndDown.value ? 260 : 300))
 
     const username = computed(() => {
@@ -159,16 +141,16 @@ export default {
       creatingChat.value = true
       try {
         const newChat = {
-          title: null, // Will be set after first message
+          title: null,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
           userId: username.value
         }
-        
+
         const docRef = await addDoc(collection(db, 'chats'), newChat)
-        await loadChats() // Reload chats
+        await loadChats()
         emit('new-chat', docRef.id)
-        emit('update:modelValue', false) // Close drawer
+        emit('update:modelValue', false)
         router.push('/')
       } catch (error) {
         console.error('Error creating chat:', error)
@@ -177,14 +159,12 @@ export default {
       }
     }
 
-    // Select existing chat
     const selectChat = (chatId) => {
       emit('select-chat', chatId)
-      emit('update:modelValue', false) // Close drawer
+      emit('update:modelValue', false)
       router.push('/')
     }
 
-    // Format date for display
     const formatDate = (timestamp) => {
       if (!timestamp) return ''
       let date
@@ -193,7 +173,7 @@ export default {
       } else {
         date = new Date(timestamp)
       }
-      
+
       const now = new Date()
       const diffTime = Math.abs(now - date)
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
@@ -201,10 +181,10 @@ export default {
       if (diffDays === 0) return 'Oggi'
       if (diffDays === 1) return 'Ieri'
       if (diffDays < 7) return `${diffDays} giorni fa`
-      
-      return date.toLocaleDateString('it-IT', { 
-        day: 'numeric', 
-        month: 'short' 
+
+      return date.toLocaleDateString('it-IT', {
+        day: 'numeric',
+        month: 'short'
       })
     }
 
@@ -240,4 +220,3 @@ export default {
   background-color: rgba(25, 118, 210, 0.12) !important;
 }
 </style>
-
