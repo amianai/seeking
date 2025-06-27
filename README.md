@@ -74,7 +74,8 @@ const firebaseConfig = {
 cp .env.example .env
 ```
 
-Inserisci la tua chiave API nel file `.env` sostituendo `your_deepseek_api_key_here`.
+Apri quindi `.env` e sostituisci `your_deepseek_api_key_here` con la tua chiave personale.
+Se necessario, puoi cambiare anche `VITE_DEEPSEEK_BASE_URL`.
 
 ### Avvio dell'Applicazione in Locale
 

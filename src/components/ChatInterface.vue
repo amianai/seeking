@@ -93,6 +93,7 @@ import axios from 'axios'
 import MessageBubble from './MessageBubble.vue'
 
 const API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY
+const BASE_URL = import.meta.env.VITE_DEEPSEEK_BASE_URL || 'https://api.deepseek.com'
 
 export default {
   name: 'ChatInterface',
@@ -249,7 +250,7 @@ export default {
           temperature = userSettings.temperature || 0.7
         }
 
-        const response = await axios.post('https://api.deepseek.com/v1/chat/completions', {
+        const response = await axios.post(`${BASE_URL}/v1/chat/completions`, {
           model: 'deepseek-chat',
           messages: [
             {
