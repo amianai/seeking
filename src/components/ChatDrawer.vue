@@ -105,6 +105,13 @@
           </template>
           <v-list-item-title>Test Firebase</v-list-item-title>
         </v-list-item>
+
+        <v-list-item @click="logout">
+          <template v-slot:prepend>
+            <v-icon>mdi-logout</v-icon>
+          </template>
+          <v-list-item-title>Logout</v-list-item-title>
+        </v-list-item>
       </v-list>
     </v-list>
   </v-navigation-drawer>
@@ -149,7 +156,7 @@ export default {
     modelValue: Boolean,
     currentChatId: String
   },
-  emits: ['update:modelValue', 'new-chat', 'select-chat'],
+  emits: ['update:modelValue', 'new-chat', 'select-chat', 'logout'],
   setup(props, { emit }) {
     const chats = ref([])
     const loading = ref(false)
@@ -247,6 +254,14 @@ export default {
       router.push('/')
     }
 
+    const logout = () => {
+      localStorage.removeItem('username')
+      chats.value = []
+      emit('select-chat', null)
+      emit('update:modelValue', false)
+      emit('logout')
+    }
+
     // Format date for display
     const formatDate = (ts) => relativeDate(ts)
 
@@ -275,7 +290,8 @@ export default {
       drawerWidth,
       createNewChat,
       selectChat,
-      formatDate
+      formatDate,
+      logout
     }
   }
 }
