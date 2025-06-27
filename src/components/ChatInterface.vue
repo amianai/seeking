@@ -56,7 +56,7 @@
             icon
             color="primary"
             class="send-button"
-            :disabled="!newMessage.trim() || isTyping"
+            :disabled="!newMessage.trim() || isTyping || isSending"
             @click="sendMessage"
           >
             <v-icon>mdi-send</v-icon>
@@ -107,6 +107,7 @@ export default {
     const messages = ref([])
     const newMessage = ref('')
     const isTyping = ref(false)
+    const isSending = ref(false)
     const messagesContainer = ref(null)
     const snackbar = ref({
       show: false,
@@ -149,7 +150,9 @@ export default {
 
     // Send message to AI
     const sendMessage = async () => {
-      if (!newMessage.value.trim()) return
+      if (isSending.value || !newMessage.value.trim()) return
+
+      isSending.value = true
 
       const messageText = newMessage.value.trim()
       newMessage.value = ''
@@ -172,6 +175,7 @@ export default {
         } catch (error) {
           console.error('Error creating chat:', error)
           showSnackbar('Errore nella creazione della chat', 'error')
+          isSending.value = false
           return
         }
       }
@@ -211,6 +215,8 @@ export default {
       } catch (error) {
         console.error('Error sending message:', error)
         showSnackbar('Errore nell\'invio del messaggio', 'error')
+      } finally {
+        isSending.value = false
       }
     }
 
@@ -361,6 +367,7 @@ export default {
       messages,
       newMessage,
       isTyping,
+      isSending,
       messagesContainer,
       snackbar,
       username,
