@@ -128,6 +128,7 @@
 
 <script>
 import { ref, onMounted, computed, watch } from 'vue'
+import { toDate, relativeDate } from '@/utils'
 import { useDisplay } from 'vuetify'
 import { useRouter } from 'vue-router'
 import { db } from '@/firebase'
@@ -175,11 +176,7 @@ export default {
         const querySnapshot = await getDocs(q)
         chats.value = querySnapshot.docs
           .map(doc => ({ id: doc.id, ...doc.data() }))
-          .sort((a, b) => {
-            const ta = a.updatedAt?.toDate ? a.updatedAt.toDate() : new Date(a.updatedAt)
-            const tb = b.updatedAt?.toDate ? b.updatedAt.toDate() : new Date(b.updatedAt)
-            return tb - ta
-          })
+          .sort((a, b) => toDate(b.updatedAt) - toDate(a.updatedAt))
       } catch (error) {
         console.error('Error loading chats:', error)
       } finally {
@@ -251,28 +248,7 @@ export default {
     }
 
     // Format date for display
-    const formatDate = (timestamp) => {
-      if (!timestamp) return ''
-      let date
-      if (timestamp.toDate) {
-        date = timestamp.toDate()
-      } else {
-        date = new Date(timestamp)
-      }
-      
-      const now = new Date()
-      const diffTime = Math.abs(now - date)
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-
-      if (diffDays === 0) return 'Oggi'
-      if (diffDays === 1) return 'Ieri'
-      if (diffDays < 7) return `${diffDays} giorni fa`
-      
-      return date.toLocaleDateString('it-IT', { 
-        day: 'numeric', 
-        month: 'short' 
-      })
-    }
+    const formatDate = (ts) => relativeDate(ts)
 
     onMounted(() => {
       loadChats()

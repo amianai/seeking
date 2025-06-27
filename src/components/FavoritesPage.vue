@@ -156,6 +156,7 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue'
+import { toDate, relativeDate } from '@/utils'
 import { db } from '@/firebase'
 import { 
   collection, 
@@ -204,11 +205,7 @@ export default {
         const querySnapshot = await getDocs(q)
         favoriteMessages.value = querySnapshot.docs
           .map(doc => ({ id: doc.id, ...doc.data() }))
-          .sort((a, b) => {
-            const ta = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp)
-            const tb = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp)
-            return tb - ta
-          })
+          .sort((a, b) => toDate(b.timestamp) - toDate(a.timestamp))
       } catch (error) {
         console.error('Error loading favorite messages:', error)
         showSnackbar('Errore nel caricamento dei messaggi preferiti', 'error')
@@ -248,32 +245,7 @@ export default {
     }
 
     // Format date for display
-    const formatDate = (timestamp) => {
-      if (!timestamp) return ''
-      let date
-      if (timestamp.toDate) {
-        date = timestamp.toDate()
-      } else {
-        date = new Date(timestamp)
-      }
-      
-      const now = new Date()
-      const diffTime = Math.abs(now - date)
-      const diffMinutes = Math.floor(diffTime / (1000 * 60))
-      const diffHours = Math.floor(diffTime / (1000 * 60 * 60))
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-      
-      if (diffMinutes < 60) return `${diffMinutes} min fa`
-      if (diffHours < 24) return `${diffHours} ore fa`
-      if (diffDays === 1) return 'Ieri'
-      if (diffDays < 7) return `${diffDays} giorni fa`
-      
-      return date.toLocaleDateString('it-IT', { 
-        day: 'numeric', 
-        month: 'short',
-        year: 'numeric'
-      })
-    }
+    const formatDate = (ts) => relativeDate(ts, true)
 
     // Show snackbar notification
     const showSnackbar = (message, color = 'success') => {
