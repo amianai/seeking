@@ -514,5 +514,6 @@ export default {
     max-width: 95%;
   }
 }
+
 </style>
 

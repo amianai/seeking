@@ -285,6 +285,8 @@ export default {
         showSnackbar('Impostazioni salvate con successo', 'success')
         document.documentElement.style.fontSize = `${settings.value.fontSize}px`
         await loadSettings()
+
+
       } catch (error) {
         console.error('Error saving settings:', error)
         showSnackbar('Errore nel salvataggio delle impostazioni', 'error')
