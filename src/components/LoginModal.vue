@@ -5,23 +5,23 @@
     persistent
     no-click-animation
   >
-    <v-card class="pa-4">
+    <v-card class="pa-4 login-card">
       <v-card-title class="text-center mb-4">
         <v-icon size="64" color="primary" class="mb-2">mdi-robot</v-icon>
-        <div class="text-h4">Benvenuto in Seeking</div>
-        <div class="text-subtitle-1 text-medium-emphasis">
-          Il tuo assistente AI personale
+        <div class="text-h5 mb-1">Benvenuto in Seeking</div>
+        <div class="text-body-1 text-medium-emphasis">
+          Chiedi ciò che vuoi ma prima autenticati.
         </div>
       </v-card-title>
 
       <v-card-text>
-        <v-form @submit.prevent="handleSubmit" ref="form">
+        <v-form @submit.prevent="handleSubmit">
           <v-text-field
             v-model="username"
             label="Nome utente"
             prepend-inner-icon="mdi-account"
             variant="outlined"
-            :rules="usernameRules"
+            color="primary"
             class="mb-3"
             autofocus
           ></v-text-field>
@@ -31,22 +31,23 @@
             label="Password"
             prepend-inner-icon="mdi-lock"
             variant="outlined"
+            color="primary"
             type="password"
-            :rules="passwordRules"
             class="mb-4"
           ></v-text-field>
 
           <v-btn
             type="submit"
             color="primary"
-            size="large"
             block
-            :loading="loading"
           >
             Accedi
           </v-btn>
         </v-form>
       </v-card-text>
+      <v-snackbar v-model="snackbar" color="error" timeout="3000">
+        {{ snackbarMessage }}
+      </v-snackbar>
     </v-card>
   </v-dialog>
 </template>
@@ -63,40 +64,29 @@ export default {
   setup(props, { emit }) {
     const username = ref('')
     const password = ref('')
-    const loading = ref(false)
-    const form = ref(null)
+    const snackbar = ref(false)
+    const snackbarMessage = ref('')
 
-    const usernameRules = [
-      v => !!v || 'Il nome utente è obbligatorio',
-      v => v.length >= 3 || 'Il nome utente deve avere almeno 3 caratteri'
-    ]
-
-    const passwordRules = [
-      v => !!v || 'La password è obbligatoria',
-      v => v.length >= 4 || 'La password deve avere almeno 4 caratteri'
-    ]
-
-    const handleSubmit = async () => {
-      const { valid } = await form.value.validate()
-      
-      if (valid) {
-        loading.value = true
-        
-        // Simulate login delay
-        setTimeout(() => {
-          emit('login', username.value)
-          loading.value = false
-        }, 800)
+    const handleSubmit = () => {
+      if (username.value.trim().length < 3) {
+        snackbarMessage.value = 'Il nome utente è troppo corto'
+        snackbar.value = true
+        return
       }
+      if (password.value.trim().length < 8) {
+        snackbarMessage.value = 'La password è troppo corta'
+        snackbar.value = true
+        return
+      }
+
+      emit('login', username.value.trim())
     }
 
     return {
       username,
       password,
-      loading,
-      form,
-      usernameRules,
-      passwordRules,
+      snackbar,
+      snackbarMessage,
       handleSubmit
     }
   }
@@ -104,12 +94,14 @@ export default {
 </script>
 
 <style scoped>
-.v-card {
+
+.login-card {
   border-radius: 16px !important;
+  background: linear-gradient(135deg, #e3f2fd, #ffffff);
 }
 
 @media (max-width: 600px) {
-  .v-card {
+  .login-card {
     width: 90vw;
   }
 }
