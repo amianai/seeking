@@ -82,16 +82,18 @@ import { db } from '@/firebase'
 import { 
   collection, 
   addDoc, 
-  doc, 
-  updateDoc, 
-  getDocs, 
-  query, 
-  where, 
-  orderBy, 
-  serverTimestamp 
+  doc,
+  updateDoc,
+  getDocs,
+  query,
+  where,
+  serverTimestamp
 } from 'firebase/firestore'
 import axios from 'axios'
 import MessageBubble from './MessageBubble.vue'
+
+const API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY
+const BASE_URL = import.meta.env.VITE_DEEPSEEK_BASE_URL || 'https://api.deepseek.com'
 
 export default {
   name: 'ChatInterface',
@@ -127,14 +129,17 @@ export default {
       try {
         const q = query(
           collection(db, 'messages'),
-          where('chatId', '==', chatId),
-          orderBy('timestamp', 'asc')
+          where('chatId', '==', chatId)
         )
         const querySnapshot = await getDocs(q)
         messages.value = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
-        }))
+        })).sort((a, b) => {
+          const ta = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp)
+          const tb = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp)
+          return ta - tb
+        })
         
         await nextTick()
         scrollToBottom()
@@ -178,16 +183,17 @@ export default {
         text: messageText,
         sender: 'user',
         timestamp: serverTimestamp(),
-        isFavorite: false
+        isFavorite: false,
+        userId: username.value
       }
 
       try {
-        await addDoc(collection(db, 'messages'), userMessage)
-        
-        // Add to local messages immediately
+        const userDoc = await addDoc(collection(db, 'messages'), userMessage)
+
+        // Add to local messages immediately with real id
         messages.value.push({
           ...userMessage,
-          id: Date.now() + '_user',
+          id: userDoc.id,
           timestamp: new Date()
         })
 
@@ -197,8 +203,9 @@ export default {
         // Get AI response
         await getAIResponse(messageText, chatId)
 
-        // Update chat timestamp
+        // Update chat info
         await updateDoc(doc(db, 'chats', chatId), {
+          title: messageText.length > 50 ? messageText.substring(0, 50) + '...' : messageText,
           updatedAt: serverTimestamp()
         })
 
@@ -211,6 +218,23 @@ export default {
     // Get response from DeepSeek API
     const getAIResponse = async (userMessage, chatId) => {
       isTyping.value = true
+
+      if (!API_KEY) {
+        console.error('DeepSeek API key is missing')
+        messages.value.push({
+          id: Date.now() + '_missing_key',
+          chatId,
+          text: 'Chiave API mancante. Configurala nel file .env per usare l\'assistente.',
+          sender: 'ai',
+          timestamp: new Date(),
+          isFavorite: false
+        })
+        showSnackbar('Chiave API mancante', 'error')
+        isTyping.value = false
+        await nextTick()
+        scrollToBottom()
+        return
+      }
 
       try {
         // Get user settings for temperature
@@ -226,7 +250,7 @@ export default {
           temperature = userSettings.temperature || 0.7
         }
 
-        const response = await axios.post('https://api.deepseek.com/v1/chat/completions', {
+        const response = await axios.post(`${BASE_URL}/v1/chat/completions`, {
           model: 'deepseek-chat',
           messages: [
             {
@@ -238,7 +262,7 @@ export default {
           max_tokens: 1000
         }, {
           headers: {
-            'Authorization': 'Bearer sk-e41be62297af4e4faac2cf38193a9f00',
+            Authorization: `Bearer ${API_KEY}`,
             'Content-Type': 'application/json'
           }
         })
@@ -251,7 +275,8 @@ export default {
           text: aiResponse,
           sender: 'ai',
           timestamp: serverTimestamp(),
-          isFavorite: false
+          isFavorite: false,
+          userId: username.value
         }
 
         const docRef = await addDoc(collection(db, 'messages'), aiMessage)
@@ -265,17 +290,17 @@ export default {
 
       } catch (error) {
         console.error('Error getting AI response:', error)
-        
-        // Add error message
+
         messages.value.push({
           id: Date.now() + '_error',
-          chatId: chatId,
-          text: 'Mi dispiace, si è verificato un errore. Riprova più tardi.',
+          chatId,
+          text:
+            'Impossibile contattare il servizio AI. Verifica la connessione e la chiave API.',
           sender: 'ai',
           timestamp: new Date(),
           isFavorite: false
         })
-        
+
         showSnackbar('Errore nella risposta AI', 'error')
       } finally {
         isTyping.value = false
@@ -294,7 +319,8 @@ export default {
           
           // Update in database
           await updateDoc(doc(db, 'messages', messageId), {
-            isFavorite: newFavoriteStatus
+            isFavorite: newFavoriteStatus,
+            userId: username.value
           })
           
           // Update local state
@@ -471,6 +497,22 @@ export default {
 
 .messages-area::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 600px) {
+  .chat-container {
+    height: calc(100vh - 56px);
+  }
+  .message-input-card {
+    margin-left: 8px !important;
+    margin-right: 8px !important;
+  }
+}
+
+@media (max-width: 960px) {
+  .message-input-card {
+    max-width: 95%;
+  }
 }
 </style>
 

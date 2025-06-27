@@ -107,5 +107,11 @@ export default {
 .v-card {
   border-radius: 16px !important;
 }
+
+@media (max-width: 600px) {
+  .v-card {
+    width: 90vw;
+  }
+}
 </style>
 
