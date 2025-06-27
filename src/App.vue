@@ -17,6 +17,7 @@
       :current-chat-id="currentChatId"
       @new-chat="handleNewChat"
       @select-chat="handleSelectChat"
+      @logout="handleLogout"
     />
 
     <!-- Main Content -->
@@ -76,6 +77,13 @@ export default {
       currentChatId.value = chatId
     }
 
+    const handleLogout = () => {
+      localStorage.removeItem('username')
+      currentChatId.value = null
+      showLoginModal.value = true
+      drawer.value = false
+    }
+
     return {
       drawer,
       showLoginModal,
@@ -83,7 +91,8 @@ export default {
       handleLogin,
       handleNewChat,
       handleSelectChat,
-      handleChatCreated
+      handleChatCreated,
+      handleLogout
     }
   }
 }
