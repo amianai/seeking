@@ -31,9 +31,9 @@
         </div>
       </div>
 
-      <!-- Action Buttons (shown on hover) -->
+      <!-- Action Buttons -->
       <div
-        v-show="showActions"
+        v-show="actionsVisible"
         class="message-actions"
         :class="{ 'user-actions': message.sender === 'user' }"
       >
@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 
 export default {
   name: 'MessageBubble',
@@ -87,11 +87,28 @@ export default {
   emits: ['toggle-favorite', 'copy-message'],
   setup() {
     const showActions = ref(false)
+    const isMobile = ref(false)
 
     const formatMessage = (text) => {
       // Convert line breaks to <br> tags
       return text.replace(/\n/g, '<br>')
     }
+
+    const updateIsMobile = () => {
+      isMobile.value = window.innerWidth <= 768
+      if (isMobile.value) {
+        showActions.value = true
+      }
+    }
+
+    onMounted(() => {
+      updateIsMobile()
+      window.addEventListener('resize', updateIsMobile)
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('resize', updateIsMobile)
+    })
 
     const formatTime = (timestamp) => {
       if (!timestamp) return ''
@@ -111,8 +128,11 @@ export default {
       })
     }
 
+    const actionsVisible = computed(() => isMobile.value || showActions.value)
+
     return {
       showActions,
+      actionsVisible,
       formatMessage,
       formatTime
     }
