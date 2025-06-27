@@ -88,9 +88,51 @@ export default {
   setup() {
     const showActions = ref(false)
 
+    const escapeHtml = (str) =>
+      str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+
+    const formatInline = (str) =>
+      str
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+
     const formatMessage = (text) => {
-      // Convert line breaks to <br> tags
-      return text.replace(/\n/g, '<br>')
+      const lines = text.split(/\r?\n/)
+      let html = ''
+      let inList = false
+      lines.forEach((line) => {
+        if (/^\s*[-*]\s+/.test(line)) {
+          if (!inList) {
+            html += '<ul>'
+            inList = true
+          }
+          const item = line.replace(/^\s*[-*]\s+/, '')
+          html += `<li>${formatInline(escapeHtml(item))}</li>`
+        } else {
+          if (inList) {
+            html += '</ul>'
+            inList = false
+          }
+          if (/^###\s+/.test(line)) {
+            html += `<h3>${formatInline(escapeHtml(line.replace(/^###\s+/, '')))}</h3>`
+          } else if (/^##\s+/.test(line)) {
+            html += `<h2>${formatInline(escapeHtml(line.replace(/^##\s+/, '')))}</h2>`
+          } else if (/^#\s+/.test(line)) {
+            html += `<h1>${formatInline(escapeHtml(line.replace(/^#\s+/, '')))}</h1>`
+          } else if (line.trim() === '') {
+            html += '<br>'
+          } else {
+            html += `<p>${formatInline(escapeHtml(line))}</p>`
+          }
+        }
+      })
+      if (inList) html += '</ul>'
+      return html
     }
 
     const formatTime = (timestamp) => {
