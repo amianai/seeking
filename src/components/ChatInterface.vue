@@ -77,7 +77,8 @@
 </template>
 
 <script>
-import { ref, onMounted, watch, nextTick, computed } from 'vue'
+import { ref, watch, nextTick, computed } from 'vue'
+import { toDate } from '@/utils'
 import { db } from '@/firebase'
 import { 
   collection, 
@@ -132,14 +133,9 @@ export default {
           where('chatId', '==', chatId)
         )
         const querySnapshot = await getDocs(q)
-        messages.value = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })).sort((a, b) => {
-          const ta = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp)
-          const tb = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp)
-          return ta - tb
-        })
+        messages.value = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => toDate(a.timestamp) - toDate(b.timestamp))
         
         await nextTick()
         scrollToBottom()
@@ -353,15 +349,13 @@ export default {
     }
 
     // Watch for chat changes
-    watch(() => props.currentChatId, (newChatId) => {
-      loadMessages(newChatId)
-    }, { immediate: true })
-
-    onMounted(() => {
-      if (props.currentChatId) {
-        loadMessages(props.currentChatId)
-      }
-    })
+    watch(
+      () => props.currentChatId,
+      (newChatId) => {
+        loadMessages(newChatId)
+      },
+      { immediate: true }
+    )
 
     return {
       messages,

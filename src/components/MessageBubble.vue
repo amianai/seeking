@@ -75,6 +75,7 @@
 
 <script>
 import { ref } from 'vue'
+import { toDate } from '@/utils'
 
 export default {
   name: 'MessageBubble',
@@ -137,15 +138,8 @@ export default {
 
     const formatTime = (timestamp) => {
       if (!timestamp) return ''
-      
-      let date
-      if (timestamp.toDate) {
-        date = timestamp.toDate()
-      } else if (timestamp instanceof Date) {
-        date = timestamp
-      } else {
-        date = new Date(timestamp)
-      }
+
+      const date = toDate(timestamp)
       
       return date.toLocaleTimeString('it-IT', {
         hour: '2-digit',

@@ -86,6 +86,7 @@
 
 <script>
 import { ref } from 'vue'
+import { toDate } from '@/utils'
 import { db } from '@/firebase'
 import { 
   collection, 
@@ -199,17 +200,9 @@ export default {
     }
     
     // Formatta la data per la visualizzazione
-    const formatDate = (timestamp) => {
-      if (!timestamp) return ''
-      
-      let date
-      if (timestamp.toDate) {
-        date = timestamp.toDate()
-      } else {
-        date = new Date(timestamp)
-      }
-      
-      return date.toLocaleString()
+    const formatDate = (ts) => {
+      if (!ts) return ''
+      return toDate(ts).toLocaleString()
     }
     
     return {
