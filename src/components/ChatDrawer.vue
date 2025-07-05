@@ -98,13 +98,6 @@
           </template>
           <v-list-item-title>Messaggi Preferiti</v-list-item-title>
         </v-list-item>
-        
-        <v-list-item to="/test-firebase">
-          <template v-slot:prepend>
-            <v-icon>mdi-firebase</v-icon>
-          </template>
-          <v-list-item-title>Test Firebase</v-list-item-title>
-        </v-list-item>
 
         <v-list-item @click="logout">
           <template v-slot:prepend>
