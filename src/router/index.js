@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import ChatInterface from '@/components/ChatInterface.vue'
 import SettingsPage from '@/components/SettingsPage.vue'
 import FavoritesPage from '@/components/FavoritesPage.vue'
-import FirebaseTest from '@/components/FirebaseTest.vue'
 
 const routes = [
   {
@@ -20,11 +19,6 @@ const routes = [
     name: 'Favorites',
     component: FavoritesPage
   },
-  {
-    path: '/test-firebase',
-    name: 'FirebaseTest',
-    component: FirebaseTest
-  }
 ]
 
 const router = createRouter({
